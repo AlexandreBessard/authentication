@@ -18,7 +18,13 @@ export interface AuthResponseData {
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
+  // Observable, This subject behave like other Subject but also
+  /*
+  A BehaviorSubject is a type of Observable in Angular.
+  It not only holds a value but also keeps track of the current value and allows components to subscribe to changes in that value.
+   */
   user = new BehaviorSubject<User>(null);
+
   private tokenExpirationTimer: any;
 
   constructor(private http: HttpClient, private router: Router) {}
@@ -86,8 +92,9 @@ export class AuthService {
       userData._token,
       new Date(userData._tokenExpirationDate)
     );
-
+    // check if the token is valid
     if (loadedUser.token) {
+      // login user
       this.user.next(loadedUser);
       const expirationDuration =
         new Date(userData._tokenExpirationDate).getTime() -
@@ -97,10 +104,14 @@ export class AuthService {
   }
 
   logout() {
+    // user is considered unauthenticated
     this.user.next(null);
+    // redirect the user
     this.router.navigate(['/auth']);
     localStorage.removeItem('userData');
+    // check if we have an active timer -> active timer means true
     if (this.tokenExpirationTimer) {
+      // clear the timeout
       clearTimeout(this.tokenExpirationTimer);
     }
     this.tokenExpirationTimer = null;
@@ -109,6 +120,7 @@ export class AuthService {
   autoLogout(expirationDuration: number) {
     this.tokenExpirationTimer = setTimeout(() => {
       this.logout();
+      // logout() will be executed once the duration is expired
     }, expirationDuration);
   }
 
@@ -121,7 +133,11 @@ export class AuthService {
     const expirationDate = new Date(new Date().getTime() + expiresIn * 1000);
     const user = new User(email, userId, token, expirationDate);
     this.user.next(user);
+    // * 1000 -> converted to milliseconds
     this.autoLogout(expiresIn * 1000);
+    // local storage managed by the client browser, could be done also using cookies
+    // value is converted to a string, can not be store as javascript object
+    // Visible if you go to the Application tab accessible from the chrome browser (inspect code)
     localStorage.setItem('userData', JSON.stringify(user));
   }
 

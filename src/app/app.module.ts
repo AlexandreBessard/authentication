@@ -50,6 +50,7 @@ import { AuthInterceptorService } from './auth/auth-interceptor.service';
     {
       provide: HTTP_INTERCEPTORS,
       useClass: AuthInterceptorService,
+      // allow multiple interceptor
       multi: true
     }
   ],
